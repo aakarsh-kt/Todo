@@ -1,14 +1,17 @@
 import React,{useEffect} from "react";
-import { ReactDOM } from "react";
+
 import Nav2 from "./nav2";
 import Button from "./button";
 import Side from "./sidebar";
 import Split from "react-split";
-import {nanoid} from "nanoid";
+// import {nanoid} from "nanoid";
+import { onSnapshot , addDoc,doc,deleteDoc,setDoc } from "firebase/firestore"
+import { taskCollection , db} from "./firebase"
 // import Callback from './gpt_Callback';
 export default function () {
   const [tasks, setTasks] = React.useState(
-    JSON.parse(localStorage.getItem("tasks")) || []
+    // JSON.parse(localStorage.getItem("tasks")) ||
+     []
   );
     const [markAsImportant,setMarkAsImportant]=React.useState({
       important:false,
@@ -16,30 +19,27 @@ export default function () {
       movingDown:false,
       isComplete:false
     });
-  function handleClick() {
+  async function handleClick() {
     // console.log("App")
     const tasking = prompt("Write down your task here");
-    if (tasking) {
-      // if(tasks[0].task==="Nothing to see here. Please add a task!")
-      // {
-      //   setTasks([{
-
-      //     task:tasking,
-      //     isDone:false
-      //   }]);
-      //
-      // }
-      // else{
-      setTasks([
-        ...tasks,
-        {
-          id:nanoid(),
-          task: tasking,
-          isDone: false,
-          isImportant: false,
-        },
-      ]);
+    const task={
+      task:tasking,
+      isDone:false,
+      isImportant:false
     }
+    const newNoteRef = await addDoc(taskCollection, task)
+    // if (tasking) {
+   
+    //   setTasks([
+    //     ...tasks,
+    //     {
+    //       id:nanoid(),
+    //       task: tasking,
+    //       isDone: false,
+    //       isImportant: false,
+    //     },
+    //   ]);
+    // }
   }
 
   function toggles(index) {
@@ -61,16 +61,49 @@ export default function () {
       return updatedTasks;
     });
   }
-  function deleteTask(id) {
-    setTasks((prev) => {
-      const updatedTasks = prev.filter((task, i) => task.id !== id);
-      return updatedTasks;
-    });
+  async function deleteTask(id) {
+    // setTasks((prev) => {
+    //   const updatedTasks = prev.filter((task, i) => task.id !== id);
+    //   return updatedTasks;
+    // });
+    const docRef = doc(db, "tasks", id)
+    await deleteDoc(docRef)
   }
-  
+   React.useEffect(()=>{
+    console.log("changing into useEffect")
+   
+      console.log("Changning")
+      for(let i=0;i<tasks.length;i++){
+      const docRef = doc(db, "tasks",tasks[i].id)
+         setDoc(docRef, { task: tasks[i].task ,isDone:tasks[i].isDone,isImportant:tasks[i].isImportant }, { merge: true })
+      
+    }
+  },[tasks])
   React.useEffect(() => {
-    localStorage.setItem("tasks", JSON.stringify(tasks));
-  }, [tasks]);
+    // localStorage.setItem("tasks", JSON.stringify(tasks));
+
+    const unsubscribe= onSnapshot(taskCollection, function(snapshot) {
+      // Sync up our local notes array with the snapshot data
+
+      const tasksArr = snapshot.docs.map(doc => ({
+        ...doc.data(),
+        id: doc.id
+    }))
+    setTasks(tasksArr)
+  })
+  return unsubscribe
+    // taskcollection.get().then((snapshot)=>{
+    //   const data=snapshot.docs.map((doc)=>({
+    //     id:doc.id,
+    //     ...doc.data()
+    //   }))
+    //   setTasks(data);
+    // }
+    // )
+  }, []);
+
+
+
   function toggleImportant(){
     setMarkAsImportant(pre=>({
       ...pre,
@@ -166,26 +199,47 @@ export default function () {
     }));
   }
  function completed(){
+  console.log("Completed Function Inside")
     setMarkAsImportant(pre=>({
       ...pre,
       isComplete:!pre.isComplete
     }));
  }
  function completedfunc(id){
+  console.log("Completed Function func")
+  //  console.log(id)
+  // console.log(markAsImportant.isComplete)
     if(markAsImportant.isComplete){
-      setTasks(prev=>{
-        const update=[...prev];
-        let index=0;
-        for(let i=0;i<prev.length;i++){
-          if(update[i].id==id)
-          {
-            index=i;
-            break;
+      setTasks((prev) => {
+        const updatedTasks = prev.map((task) => {
+          if (task.id === id) {
+            return {
+              ...task,
+              isDone: !task.isDone,
+            };
           }
-        }
-        update[index].isDone=true;
-        return update;
-      })
+          return task;
+        });
+  
+        return updatedTasks;
+      });
+      // setTasks(prev=>{
+      //   const update=prev;
+      //   let index=0;
+      //   for(let i=0;i<prev.length;i++){
+      //     if(update[i].id==id)
+      //     {
+      //       index=i;
+      //       break;
+      //     }
+      //   }
+      //   // update[index]={
+      //   //   ...update[index],
+      //   //   isDone:!isDone
+      //   // };
+      //   // console.log(update[index].isDone)
+      //   return update;
+      // })
       setMarkAsImportant(pre=>({
         ...pre,
         isComplete:!pre.isComplete

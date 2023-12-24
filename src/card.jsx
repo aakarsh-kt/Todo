@@ -2,7 +2,9 @@ import React from "react";
 
 export default function Card(props) {
  
- 
+ function nothing(){
+  console.log("nothing")
+ }
   return (
     <div>
       <div >
@@ -15,6 +17,8 @@ export default function Card(props) {
       
           <input className="check--box"
                 type="checkbox" 
+                checked={taski.isDone}
+                onChange={()=>nothing}
                 onClick={()=>  props.onDone(taski.id)}
               
             />
@@ -29,7 +33,7 @@ export default function Card(props) {
           <img src="../assets/up.png" alt="up" className="arrow" onClick={()=>props.goUp(taski.id)} />
           <img src="../assets/down.png" alt="up" className="arrow" onClick={()=>props.goDown(taski.id)} />
           </div>
-          <img src="../assets/bin3.png"  alt="Delete" className="pic" onClick={()=>   props.onDelete(taski.id)}/>
+          <img src="../assets/bin2.png"  alt="Delete" className="pic" onClick={()=>   props.onDelete(taski.id)}/>
          
           </div>
         ))}
