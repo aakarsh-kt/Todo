@@ -10,6 +10,11 @@ export default function (props){
             <li onClick={props.moveUp}>Move up</li>
             <li onClick={props.moveDown}>Move Down </li>
             </ul>
+            <div className='footer--div'>
+                <h3 className='footer'>
+                    Made By Akarsh Katiyar
+                </h3>
+            </div>
         </div>
     )
 }

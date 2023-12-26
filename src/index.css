@@ -55,7 +55,14 @@
     padding-right: 10px;
     cursor:pointer; 
 }
-
+.footer--div{
+    margin-top: auto;
+}
+.footer{
+    font-family: cursive;
+    color: #2d6a4f;
+    text-align: center;
+}
 .check--box{
     transform: scale(2);
     /* margin-right: 40%; */
